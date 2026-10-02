@@ -25,6 +25,7 @@ RUN apt-get update \
       openssh-server openssh-client tmux \
       numactl jq procps iproute2 less vim-tiny \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
+ && rm -f /etc/ssh/ssh_host_* \
  && mkdir -p /workspace /run/sshd
 
 COPY tools/ /opt/v100-tools/

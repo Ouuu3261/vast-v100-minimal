@@ -12,7 +12,7 @@ nvtop --version
 test -x /usr/local/bin/v100-preflight
 test ! -d /opt/conda
 test ! -d /opt/sglang
-if dpkg-query -W -f='${Package}\n' | grep -Eq '^(nvidia-driver-|cuda-drivers|python3-pip|python3-torch|python3-tensorflow)'; then
+if dpkg-query -W -f='${Package}\n' | grep -E '^(nvidia-driver-|cuda-drivers|python3-pip|python3-torch|python3-tensorflow)' >/dev/null; then
   echo 'Unexpected driver installer or ML package' >&2
   exit 1
 fi
