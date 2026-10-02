@@ -1,0 +1,32 @@
+name: Build V100 minimal image
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and verify Linux amd64 image
+        run: |
+          docker build --platform linux/amd64 -t ghcr.io/ouuu3261/vast-v100-minimal:cuda12.9.1-v1 .
+          docker run --rm --entrypoint bash ghcr.io/ouuu3261/vast-v100-minimal:cuda12.9.1-v1 /opt/v100-tools/verify-toolchain.sh
+          docker image inspect ghcr.io/ouuu3261/vast-v100-minimal:cuda12.9.1-v1 --format '{{json .}}' > image-inspect.json
+          docker run --rm --entrypoint bash ghcr.io/ouuu3261/vast-v100-minimal:cuda12.9.1-v1 -c 'dpkg-query -W' > package-inventory.txt
+      - name: Publish to GHCR
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push ghcr.io/ouuu3261/vast-v100-minimal:cuda12.9.1-v1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v100-image-build-evidence
+          path: |
+            image-inspect.json
+            package-inventory.txt
