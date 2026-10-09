@@ -30,8 +30,9 @@ int main(int argc, char **argv) {
         check(cudaSetDevice(device), "cudaSetDevice");
         cudaDeviceProp properties{};
         check(cudaGetDeviceProperties(&properties, device), "cudaGetDeviceProperties");
-        if (properties.major != 7 || properties.minor != 0) {
-            std::fprintf(stderr, "GPU %d is %s sm_%d%d; this image test targets V100 sm_70\n",
+        const int architecture = properties.major * 10 + properties.minor;
+        if (architecture != 70 && architecture != 75 && architecture != 86 && architecture != 89) {
+            std::fprintf(stderr, "GPU %d is %s sm_%d%d; this image supports SM70/75/86/89\n",
                          device, properties.name, properties.major, properties.minor);
             return 1;
         }
@@ -48,8 +49,9 @@ int main(int argc, char **argv) {
                 return 1;
             }
         }
-        std::printf("PASS GPU %d: %s sm_70 %.2f GiB; 1 KiB CUDA kernel roundtrip\n",
-                    device, properties.name, properties.totalGlobalMem / 1073741824.0);
+        std::printf("PASS GPU %d: %s sm_%d%d %.2f GiB; 1 KiB CUDA kernel roundtrip\n",
+                    device, properties.name, properties.major, properties.minor,
+                    properties.totalGlobalMem / 1073741824.0);
     }
     return 0;
 }
